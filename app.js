@@ -50,6 +50,7 @@ const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const activeUnits = (side) => state.units.filter((unit) => unit.side === side && unit.hp > 0);
 
 function boot() {
+  if (location.hash === '#console') $('bootOverlay').classList.add('hidden');
   loadApiConfig();
   renderAll();
   addLog('БИОС: 红色神谕启动。磁芯阵列稳定，阴极射线管同步。');
@@ -69,6 +70,7 @@ function bindEvents() {
   $('terminalForm').addEventListener('submit', runTerminalCommand);
   $('autoHack').addEventListener('click', autoHack);
   $('saveApi').addEventListener('click', saveApiConfig);
+  $('enterConsole').addEventListener('click', () => $('bootOverlay').classList.add('hidden'));
 }
 
 function tickClock() {
@@ -77,6 +79,7 @@ function tickClock() {
 
 function renderAll() {
   renderResources();
+  renderDashboard();
   renderObjectives();
   renderMap();
   renderUnits();
@@ -90,6 +93,25 @@ function renderAll() {
 function renderHud() {
   $('turnBadge').textContent = `第 ${state.minute} 分钟｜${state.weather}`;
   $('outcomeBadge').textContent = state.phase;
+  $('selectedCellBadge').textContent = `目标格：${cells[state.selectedCell].label} / ${terrainNames[cells[state.selectedCell].terrain]}`;
+  $('doctrineTicker').textContent = state.metrics.alarm > 75 ? '条令：降低烈度，避免外交失控。' : state.metrics.hack > 70 ? '条令：利用敌网混乱，快速夺取目标区。' : '条令：重装夺点，电子战压制，火力纵深支援。';
+}
+
+function renderDashboard() {
+  const gauges = [
+    ['alarmNeedle', 'alarmGauge', state.metrics.alarm],
+    ['hackNeedle', 'hackGauge', state.metrics.hack],
+    ['stabilityNeedle', 'stabilityGauge', state.metrics.stability],
+  ];
+  gauges.forEach(([needleId, valueId, value]) => {
+    // 初学者提示：把 0-100 的数值映射到仪表盘角度，界面就能实时“转针”。
+    const angle = -120 + value * 2.4;
+    $(needleId).style.setProperty('--angle', `${angle}deg`);
+    $(valueId).textContent = value;
+  });
+  const friendly = activeUnits('friendly').length;
+  const enemy = activeUnits('enemy').length;
+  $('tacticalSummary').innerHTML = `己方活动集群 <b>${friendly}</b> ｜ 敌方活动信号 <b>${enemy}</b><br>目标控制 <b>${state.metrics.objectivesHeld}/3</b> ｜ 天气 <b>${state.weather}</b> ｜ 阶段 <b>${state.phase}</b>`;
 }
 
 function renderResources() {
@@ -105,7 +127,8 @@ function renderResources() {
   $('resourceGrid').innerHTML = items.map(([label, value, key]) => {
     const danger = (key === 'alarm' && value > 75) || (key !== 'alarm' && key !== 'hack' && value < 12);
     const warn = (key === 'alarm' && value > 55) || (key !== 'alarm' && key !== 'hack' && value < 25);
-    return `<article class="resource-card ${danger ? 'danger' : warn ? 'warn' : ''}">${label}<strong>${value}</strong></article>`;
+    const pct = key === 'nukeCodes' ? Math.min(100, value * 50) : value;
+    return `<article class="resource-card ${danger ? 'danger' : warn ? 'warn' : ''}"><span>${label}</span><strong>${value}</strong><em style="width:${pct}%"></em></article>`;
   }).join('');
 }
 
