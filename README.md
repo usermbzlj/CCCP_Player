@@ -1,55 +1,73 @@
-# КРАСНЫЙ ОРАКУЛ // 红色神谕
+# React + TypeScript + Vite
 
-一个可直接在浏览器中运行的冷战虚构沙盘游戏：模拟苏联时期秘密超级计算机界面，用于监控敌我装甲/重装部队、下达命令、触发火力支援、管理外交升级，并通过虚拟终端与 LLM 反馈系统增强沉浸感。
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-> 本项目是纯虚构游戏。所有“入侵”“导弹”“核打击”“外交/新闻反馈”均为本地沙盘叙事，不连接真实目标，也不提供现实攻击能力。
+Currently, two official plugins are available:
 
-## 运行方式
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-直接打开 `index.html` 即可游玩。也可以使用任意静态服务器：
+## React Compiler
 
-```bash
-python3 -m http.server 8000
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-然后访问 `http://localhost:8000`。
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-## 胜负目标
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-你需要在 18 分钟内完成以下目标：
-
-- 控制至少 2 个目标区。
-- 压制敌方重装矛头，使敌重装单位失去持续威胁。
-- 保持国际警戒低于失控阈值。
-
-如果国际警戒达到 100、己方单位全灭，或战役窗口关闭时目标不足，则失败。
-
-## 玩法概要
-
-- 点击地图格选择目标坐标；目标/备注框会自动填入坐标。
-- 在“指令总线”选择己方单位，执行推进、防御、侦察、抢修、干扰、补给、佯动等命令。
-- 管理指挥点、补给、情报、政治资本和核授权码；资源不足会阻止高强度行动。
-- 使用炮兵、航空、战役导弹、电磁脉冲弹或核打击等虚构支援改变战局；高烈度支援会显著提高国际警戒。
-- 敌方会尝试夺取目标、压迫接触线、使用电子战反制渗透。
-- 天气与随机事件会改变补给、情报、外交压力和敌方士气。
-- 在“虚拟终端”输入 `help` 查看命令，使用 `scan`、`decrypt`、`sigint`、`forecast`、`report` 等命令获得反馈。
-- 可以用“保存/读取/重开”管理本机浏览器存档。
-
-## 界面特色
-
-- 启动遮罩模拟绝密终端开机流程，可用 `#console` URL 跳过遮罩便于截图/演示。
-- 战略仪表实时显示国际警戒、敌网渗透和战区稳定度。
-- 地图控制台包含雷达扫描、小型条令滚动、选中格摘要和地形化战术格。
-- 资源卡带有进度条和警告色，方便快速判断是否还能执行高烈度行动。
-
-## LLM API 配置
-
-默认端点为：
-
-```text
-https://api.openai.com/v1/chat/completions
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-在“LLM 智能反馈”区域填写兼容 Chat Completions 的端点、API Key 和模型后，可生成总指挥、敌方、外交、新闻、终端人格和战报反馈。未配置或请求失败时会自动使用本地规则回退。
-
-浏览器直连某些 API 可能受 CORS 限制。若遇到失败，可填写自己的本地代理端点。API Key 仅保存在本机浏览器 `localStorage` 中。
